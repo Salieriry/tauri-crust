@@ -1,7 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 use serde::Serialize;
-use CompiladorRustC::{Lexer, Parser, Stmt, Token};
+use compilador_rust_c::{Lexer, Parser, Stmt, Token};
 
 #[derive(Serialize)]
 struct CompilerOutput {
