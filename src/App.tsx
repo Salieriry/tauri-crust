@@ -7,6 +7,7 @@ import { ASTOutput } from "./components/ASTOutput";
 import { Button } from "./components/ui/button";
 import { ModeToggle } from "./components/mode-toggle";
 import { Play } from "lucide-react";
+import { toast } from "sonner";
 
 interface Token {
   type: string;
@@ -49,9 +50,11 @@ int main() {
       if (result.error) {
         // Se houver erro de lógica (parser), mostra alerta mas mantém os tokens visíveis
         alert(result.error);
+        toast.error("Houve algum erro na compilação!");
       } else {
         // Sucesso total
         setAst(result.ast);
+        toast.success("Compilação concluída com sucesso!");
       }
 
     } catch (error) {
@@ -61,6 +64,7 @@ int main() {
     } finally {
       setIsCompiling(false);
     }
+
   }
 
   return (
