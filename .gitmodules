@@ -1,0 +1,3 @@
+[submodule "src-tauri/cpp_compiler"]
+	path = src-tauri/cpp_compiler
+	url = https://github.com/Salieriry/c-enferrujado
