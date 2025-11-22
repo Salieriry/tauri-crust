@@ -1,51 +1,98 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import { CodeEditor } from "./components/CodeEditor";
+import { TokenOutput } from "./components/TokenOutput";
+import { ASTOutput } from "./components/ASTOutput";
+import { Button } from "./components/ui/button";
+import { ModeToggle } from "./components/mode-toggle";
+import { Play } from "lucide-react";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+interface Token {
+  type: string;
+  value: string;
+  line: number;
+  column: number;
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
+interface CompileResult {
+  tokens: Token[];
+  ast: any;
+}
+
+export default function App() {
+  const [code, setCode] = useState(`// C++ Sample Code
+int main() {
+    int x = 42;
+    return 0;
+}`);
+  
+  const [tokens, setTokens] = useState<Token[]>([]);
+  const [ast, setAst] = useState<any>(null);
+  const [isCompiling, setIsCompiling] = useState(false);
+
+  async function handleCompile() {
+    setIsCompiling(true);
+    try {
+      // Chama o backend Rust
+      const result = await invoke<CompileResult>("compile", { code });
+      
+      setTokens(result.tokens);
+      setAst(result.ast);
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao compilar: " + error);
+    } finally {
+      setIsCompiling(false);
+    }
   }
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    
+    <div className="h-screen flex flex-col bg-background text-foreground">
+      
+      {/* Cabeçalho */}
+      <header className="border-b px-6 py-3 flex items-center justify-between bg-card">
+        <div>
+          <h1 className="text-lg font-bold">Compilador C++ (Rust + Tauri)</h1>
+          <p className="text-sm text-muted-foreground">Análise Léxica e Sintática</p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* Adicione o Botão de Tema aqui */}
+          <ModeToggle />
+          
+          <Button onClick={handleCompile} disabled={isCompiling} className="gap-2">
+            <Play className="size-4" />
+            {isCompiling ? "Compilando..." : "Compilar"}
+          </Button>
+        </div>
+      </header>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
+      {/* Área de Conteúdo com Abas */}
+      <Tabs defaultValue="editor" className="flex-1 flex flex-col overflow-hidden">
+        <div className="px-6 mt-4">
+          <TabsList className="w-fit">
+            <TabsTrigger value="editor">Editor de Código</TabsTrigger>
+            <TabsTrigger value="tokens">Tokens</TabsTrigger>
+            <TabsTrigger value="ast">AST (Sintático)</TabsTrigger>
+          </TabsList>
+        </div>
 
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+        <div className="flex-1 overflow-hidden">
+          <TabsContent value="editor" className="h-full m-0 p-6 pt-2">
+            <CodeEditor code={code} onChange={setCode} />
+          </TabsContent>
+
+          <TabsContent value="tokens" className="h-full m-0 p-6 pt-2 overflow-auto">
+            <TokenOutput tokens={tokens} />
+          </TabsContent>
+
+          <TabsContent value="ast" className="h-full m-0 p-6 pt-2 overflow-auto">
+            <ASTOutput ast={ast} />
+          </TabsContent>
+        </div>
+      </Tabs>
+    </div>
   );
 }
-
-export default App;

@@ -1,9 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { ThemeProvider } from "./components/theme-provider";
+import "./index.css";
 import App from "./App";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    {/* Envolva o App com o ThemeProvider */}
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <App />
+    </ThemeProvider>
   </React.StrictMode>,
 );

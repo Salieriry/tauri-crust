@@ -3,6 +3,13 @@
 version = 4
 
 [[package]]
+name = "CompiladorRustC"
+version = "0.1.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3644,6 +3651,7 @@ dependencies = [
 name = "tauri-crust"
 version = "0.1.0"
 dependencies = [
+ "CompiladorRustC",
  "serde",
  "serde_json",
  "tauri",
