@@ -19,13 +19,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Removi a etapa de instalar o PNPM
+      # --- NOVO PASSO: Clona o Backend ---
+      - name: Checkout Backend Repo
+        uses: actions/checkout@v4
+        with:
+          # ATENÇÃO: Troque "SEU_USUARIO/NOME_DO_REPO_BACKEND" pelo nome real
+          # Exemplo: joao/c-enferrujado
+          repository: SEU_USUARIO/NOME_DO_REPO_BACKEND 
+          path: src-tauri/cpp_compiler
+      # -----------------------------------
 
       - name: use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm' # Mudei de 'pnpm' para 'npm'
+          cache: 'npm'
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -39,13 +47,11 @@ jobs:
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: install frontend dependencies
-        run: npm install # Mudei de 'pnpm install' para 'npm install'
+        run: npm install
 
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Como você não tem chaves ainda, removi as variáveis de ambiente das chaves 
-          # para evitar erros de "variável vazia" ou confusão no script.
         with:
           tagName: v__VERSION__
           releaseName: 'App v__VERSION__'
