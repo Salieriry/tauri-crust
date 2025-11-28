@@ -7,7 +7,7 @@ use CompiladorRustC::{Lexer, Parser, Stmt, Token};
 struct CompilerOutput {
     tokens: Vec<Token>,
     ast: Option<Vec<Stmt>>,
-    error: Option<String>,   
+    error: Option<String>,
 }
 
 #[tauri::command]
@@ -21,7 +21,7 @@ fn compile(code: String) -> Result<CompilerOutput, String> {
         loop {
             let (token, linha) = lexer.prox_token(); // [ALTERADO] Desestrutura a tupla
             let is_fundo = matches!(token, Token::Fundo);
-            
+
             tokens_with_lines.push((token, linha));
 
             if is_fundo {
@@ -39,7 +39,7 @@ fn compile(code: String) -> Result<CompilerOutput, String> {
 
     // 2. Clonamos os tokens COM LINHAS para o parser
     let tokens_for_parser = tokens_with_lines.clone();
-    
+
     let parser_result = std::panic::catch_unwind(|| {
         // [ALTERADO] O Parser::new agora aceita Vec<(Token, usize)> naturalmente
         let mut parser = Parser::new(tokens_for_parser);

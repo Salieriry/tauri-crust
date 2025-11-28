@@ -35,14 +35,14 @@ int main() {
 
     return 0;
 }`);
-  
+
   const [tokens, setTokens] = useState<Token[]>([]);
   const [ast, setAst] = useState<any>(null);
   const [isCompiling, setIsCompiling] = useState(false);
 
   async function handleCompile() {
     setIsCompiling(true);
-    
+
     // Limpa o estado anterior para evitar confusão visual
     setTokens([]);
     setAst(null);
@@ -52,7 +52,7 @@ int main() {
     try {
       // Chama o backend Rust
       const result = await invoke<CompileResult>("compile", { code });
-      
+
       // Sempre atualiza os tokens, mesmo se houver erro de sintaxe
       setTokens(result.tokens);
 
@@ -88,20 +88,20 @@ int main() {
   }
 
   return (
-    
+
     <div className="h-screen flex flex-col bg-background text-foreground">
-      
+
       {/* Cabeçalho */}
       <header className="border-b px-6 py-3 flex items-center justify-between bg-card">
         <div>
           <h1 className="text-lg font-bold">Compilador C++ (Rust + Tauri)</h1>
           <p className="text-sm text-muted-foreground">Análise Léxica e Sintática</p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* Adicione o Botão de Tema aqui */}
           <ModeToggle />
-          
+
           <Button onClick={handleCompile} disabled={isCompiling} className="gap-2">
             <Play className="size-4" />
             {isCompiling ? "Compilando..." : "Compilar"}
