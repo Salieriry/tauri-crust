@@ -39,39 +39,34 @@ int main() {
   const [tokens, setTokens] = useState<Token[]>([]);
   const [ast, setAst] = useState<any>(null);
   const [isCompiling, setIsCompiling] = useState(false);
-
-  // Estado para armazenar qual linha tem erro (null se não houver erro)
   const [errorLine, setErrorLine] = useState<number | null>(null);
 
   async function handleCompile() {
     setIsCompiling(true);
 
-    // Limpa o estado anterior para evitar confusão visual
+    // limpa estado anterior
     setTokens([]);
     setAst(null);
-    setErrorLine(null); // Remove o destaque vermelho antes de começar
+    setErrorLine(null);
 
     const loadingToast = toast.loading("Compilamento iniciado...");
 
     try {
-      // Chama o backend Rust
       const result = await invoke<CompileResult>("compile", { code });
 
-      // Sempre atualiza os tokens, mesmo se houver erro de sintaxe
+      // atualiza tokens mesmo com erro de sintaxe
       setTokens(result.tokens);
 
       if (result.error) {
-        // Se houver erro de lógica (parser), mostra alerta
         toast.dismiss(loadingToast);
 
-        // Lógica para extrair o número da linha da mensagem de erro
-        // O Rust envia algo como: "Erro na linha 5: Esperado ';'"
+        // extrai linha do erro da mensagem do rust
         const regexErroLinha = /Erro na linha (\d+):/;
         const match = result.error.match(regexErroLinha);
 
         if (match && match[1]) {
           const linha = parseInt(match[1], 10);
-          setErrorLine(linha); // Atualiza o estado para o editor pintar a linha
+          setErrorLine(linha);
         }
 
         toast.error("Erro de Compilação", {
@@ -79,7 +74,6 @@ int main() {
           duration: 5000,
         });
       } else {
-        // Sucesso total
         toast.dismiss(loadingToast);
         setAst(result.ast);
         toast.success("Compilação Concluída!", {
@@ -89,7 +83,6 @@ int main() {
       }
 
     } catch (error) {
-      // Erros fatais (Rust panic não tratado ou falha de comunicação)
       console.error(error);
       toast.dismiss(loadingToast);
 
@@ -103,8 +96,6 @@ int main() {
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground">
-
-      {/* Cabeçalho */}
       <header className="border-b px-6 py-3 flex items-center justify-between bg-card">
         <div>
           <h1 className="text-lg font-bold">Compilador C++ (Rust + Tauri)</h1>
@@ -121,10 +112,8 @@ int main() {
         </div>
       </header>
 
-      {/* Toasts */}
       <Toaster />
 
-      {/* Área de Conteúdo com Abas */}
       <Tabs defaultValue="editor" className="flex-1 flex flex-col overflow-hidden">
         <div className="px-6 mt-4">
           <TabsList className="w-fit">
@@ -136,7 +125,6 @@ int main() {
 
         <div className="flex-1 overflow-hidden">
           <TabsContent value="editor" className="h-full m-0 p-6 pt-2">
-            {/*Passamos a prop errorLine para o componente */}
             <CodeEditor code={code} onChange={setCode} errorLine={errorLine} />
           </TabsContent>
 

@@ -14,7 +14,7 @@ interface TokenOutputProps {
   tokens: any[];
 }
 
-// Lógica de cores baseada no tipo de token
+// cores baseadas no tipo de token
 const getTokenColor = (type: string) => {
   if (type.includes("Inclusao") || type.includes("Diretiva")) return "bg-pink-500/10 text-pink-500 border-pink-500/20";
   if (type.includes("Numero") || type.includes("Texto") || type.includes("Char")) return "bg-orange-500/10 text-orange-500 border-orange-500/20";
@@ -56,7 +56,7 @@ export function TokenOutput({ tokens }: TokenOutputProps) {
           </TableHeader>
           <TableBody>
             {tokens.map((token: any, index) => {
-               // Lógica para extrair dados do Enum do Rust
+               // extrai dados do enum do rust
                const typeKey = typeof token === 'string' ? token : Object.keys(token)[0];
                
                let displayValue = typeof token === 'string' ? token : JSON.stringify(token[typeKey]);

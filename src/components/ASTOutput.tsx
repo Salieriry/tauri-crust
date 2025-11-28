@@ -16,7 +16,7 @@ interface ASTNodeProps {
 function ASTNode({ node, label, depth = 0 }: ASTNodeProps) {
   const [isExpanded, setIsExpanded] = useState(depth < 3);
 
-  // 1. Tratamento de Nulo
+  // tratamento de nulo
   if (node === null) {
       return (
         <div className="py-1" style={{ marginLeft: `${depth * 12}px` }}>
@@ -26,7 +26,7 @@ function ASTNode({ node, label, depth = 0 }: ASTNodeProps) {
       );
   }
   
-  // 2. Tratamento de Primitivos (Strings, Numbers)
+  // tratamento de primitivos
   if (typeof node !== "object") {
     return (
         <div className="py-1 flex items-center gap-2" style={{ marginLeft: `${depth * 12}px` }}>
@@ -45,8 +45,7 @@ function ASTNode({ node, label, depth = 0 }: ASTNodeProps) {
   // 3. Lógica para diferenciar Enum (Wrapper) de Struct (Objeto Plano)
   const keys = Object.keys(node);
   
-  // Se tiver mais de 1 chave, é certeza que é uma Struct (como Parametro {tipo, nome...})
-  // Se tiver 1 chave, pode ser um Enum OU uma Struct com 1 campo. 
+  // se tiver 1 chave com primeira letra maiúscula, é enum, senão é struct
   const isEnumWrapper = keys.length === 1 && /^[A-Z]/.test(keys[0]);
 
   let nodeLabel = "";
@@ -54,17 +53,16 @@ function ASTNode({ node, label, depth = 0 }: ASTNodeProps) {
   let isStruct = false;
 
   if (isEnumWrapper) {
-      // É um Enum (ex: Stmt::If), usamos a chave como Badge
+      // é um enum, usamos a chave como badge
       nodeLabel = keys[0];
       const data = node[nodeLabel];
       if (typeof data === 'object' && data !== null) {
           properties = Object.entries(data);
       } else if (data !== null) {
-          // Caso especial para Enums que guardam valor primitivo direto
            properties = [['value', data]]; 
       }
   } else {
-      // É uma Struct (ex: Parametro), não tem Badge principal, listamos as chaves direto
+      // é uma struct, lista as chaves direto
       isStruct = true;
       properties = Object.entries(node);
   }
@@ -81,7 +79,7 @@ function ASTNode({ node, label, depth = 0 }: ASTNodeProps) {
         }}
         style={{ marginLeft: `${depth * 12}px` }}
       >
-        {/* Ícone de Expansão */}
+        {/* ícone de expansão */}
         <div className="mt-0.5 text-muted-foreground shrink-0">
             {hasChildren ? (
                 isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />
@@ -89,24 +87,24 @@ function ASTNode({ node, label, depth = 0 }: ASTNodeProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Label da propriedade pai (ex: "parametros:") */}
+          {/* label da propriedade pai */}
           {label && <span className="text-muted-foreground italic text-xs">{label}:</span>}
           
-          {/* Se for Enum, mostra o Badge. Se for Struct, mostra apenas "{}" indicativo ou nada */}
+          {/* mostra badge se for enum */}
           {!isStruct && nodeLabel && (
              <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20">
                 {nodeLabel}
              </Badge>
           )}
           
-          {/* Valor primitivo direto de enum unitário */}
+          {/* valor primitivo direto */}
           {!isStruct && properties.length === 1 && properties[0][0] === 'value' && (
               <span className="text-green-600 font-bold bg-green-500/5 px-1 rounded">{String(properties[0][1])}</span>
           )}
         </div>
       </div>
 
-      {/* Renderização dos Filhos */}
+      {/* renderização dos filhos */}
       {isExpanded && hasChildren && (
         <div>
           {properties.map(([key, value], index) => {
@@ -127,7 +125,7 @@ function ASTNode({ node, label, depth = 0 }: ASTNodeProps) {
                        ))}
                    </div>
                ) : (
-                   // Chama recursivamente passando a chave como label
+                   // chama recursivamente passando a chave como label
                    <ASTNode node={value} label={key} depth={depth + 1} />
                )}
             </div>
