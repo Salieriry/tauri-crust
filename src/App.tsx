@@ -35,31 +35,45 @@ int main() {
 
     return 0;
 }`);
-  
+
   const [tokens, setTokens] = useState<Token[]>([]);
   const [ast, setAst] = useState<any>(null);
   const [isCompiling, setIsCompiling] = useState(false);
 
+  // Estado para armazenar qual linha tem erro (null se não houver erro)
+  const [errorLine, setErrorLine] = useState<number | null>(null);
+
   async function handleCompile() {
     setIsCompiling(true);
-    
+
     // Limpa o estado anterior para evitar confusão visual
     setTokens([]);
     setAst(null);
+    setErrorLine(null); // Remove o destaque vermelho antes de começar
 
     const loadingToast = toast.loading("Compilamento iniciado...");
 
     try {
       // Chama o backend Rust
       const result = await invoke<CompileResult>("compile", { code });
-      
+
       // Sempre atualiza os tokens, mesmo se houver erro de sintaxe
       setTokens(result.tokens);
 
       if (result.error) {
-        // Se houver erro de lógica (parser), mostra alerta mas mantém os tokens visíveis
+        // Se houver erro de lógica (parser), mostra alerta
         toast.dismiss(loadingToast);
-        //alert(result.error);
+
+        // Lógica para extrair o número da linha da mensagem de erro
+        // O Rust envia algo como: "Erro na linha 5: Esperado ';'"
+        const regexErroLinha = /Erro na linha (\d+):/;
+        const match = result.error.match(regexErroLinha);
+
+        if (match && match[1]) {
+          const linha = parseInt(match[1], 10);
+          setErrorLine(linha); // Atualiza o estado para o editor pintar a linha
+        }
+
         toast.error("Erro de Compilação", {
           description: result.error,
           duration: 5000,
@@ -78,7 +92,7 @@ int main() {
       // Erros fatais (Rust panic não tratado ou falha de comunicação)
       console.error(error);
       toast.dismiss(loadingToast);
-      //alert("Erro crítico ao compilar: " + error);
+
       toast.error("Erro Crítico", {
         description: "Falha na comunicação com o compilador: " + error,
       });
@@ -88,20 +102,18 @@ int main() {
   }
 
   return (
-    
     <div className="h-screen flex flex-col bg-background text-foreground">
-      
+
       {/* Cabeçalho */}
       <header className="border-b px-6 py-3 flex items-center justify-between bg-card">
         <div>
           <h1 className="text-lg font-bold">Compilador C++ (Rust + Tauri)</h1>
           <p className="text-sm text-muted-foreground">Análise Léxica e Sintática</p>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          {/* Adicione o Botão de Tema aqui */}
           <ModeToggle />
-          
+
           <Button onClick={handleCompile} disabled={isCompiling} className="gap-2">
             <Play className="size-4" />
             {isCompiling ? "Compilando..." : "Compilar"}
@@ -124,7 +136,8 @@ int main() {
 
         <div className="flex-1 overflow-hidden">
           <TabsContent value="editor" className="h-full m-0 p-6 pt-2">
-            <CodeEditor code={code} onChange={setCode} />
+            {/*Passamos a prop errorLine para o componente */}
+            <CodeEditor code={code} onChange={setCode} errorLine={errorLine} />
           </TabsContent>
 
           <TabsContent value="tokens" className="h-full m-0 p-6 pt-2 overflow-auto">
